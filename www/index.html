@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Browsa Pi</title>
+
+
+    <link href="/favicon32.png" rel="icon" type="image/png">
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,300,200" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/styles.css" type="text/css">
+    <link rel="stylesheet" href="/lib/jquery.jsonbrowser.js/src/jquery.jsonbrowser.css" type="text/css">
+</head>
+<body>
+    <div id="overlay"></div>
+    <div id="error"></div>
+
+    <div id="browsapi">
+        <header>
+            <h1>Browsa Pi</h1>
+        </header>
+            
+        <section id="configuration" class="box">
+            <h2>Configuration</h2>
+            
+            <div>
+                <select id="conf_auth">
+                    <option value="">No Auth</option>
+                    <option value="basic">Basic Auth</option>
+                </select>
+                
+                <select id="conf_method">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="HEAD">HEAD</option>
+                    <option value="OPTIONS">OPTIONS</option>
+                </select>
+            
+                <span id="auth_basic">
+                    <input id="auth_basic_user" type="text" placeholder="Username">
+                    :
+                    <input id="auth_basic_pass" type="text" placeholder="Password">
+                    @
+                </span>
+
+                <input id="conf_host" type="text" placeholder="Host (http://example.org)"><span id="rqst_endpoint_selector" class="selector"></span>
+                <div id="conf_endpoints" class="selection"></div>
+                /
+                <input id="conf_path" type="text" placeholder="Request Path (/example/path.json)"><span id="rqst_path_selector" class="selector"></span>
+                <div id="conf_paths" class="selection"></div>
+                
+                <button id="conf_send">Send</button>
+            </div>
+
+            <div id="conf_headers">
+                <span class="label">Headers:</span>
+                <span class="headers"></span>
+                <a href="">Add ...</a>
+            </div>
+            
+            <div id="conf_header_dlg">
+                <h2>Modify Header</h2>
+                
+                <p class="info">
+                    You can remove a header by clearing its key field and clicking <em>Save</em>. 
+                </p>
+                
+                <p>
+                    <input id="conf_header_dlg_key" type="text" placeholder="Key">
+                </p>
+                <p>
+                    <input id="conf_header_dlg_value" type="text" placeholder="Value">
+                </p>
+                <p>
+                    <button>Save</button>
+                </p>
+            </div>
+        </section>
+        
+        <div id="left_column">
+            <section id="request" class="box">
+                <h2>Request</h2>
+                
+                <dl>
+                    <dt>Method</dt><dd class="method"></dd>
+                    <dt>Scheme</dt><dd class="scheme"></dd>
+                    <dt>Host</dt><dd class="host"></dd>
+                    <dt>Path</dt><dd class="path"></dd>
+                    <dt>Query</dt><dd class="query"></dd>
+                </dl>
+                
+                <div class="clear"></div>
+    
+                <h3>Headers</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 33%;">Name</th>
+                            <th style="width: 67%;">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+            
+            <section id="request_log" class="box">
+                <h2>Request Log</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">Time</th>
+                            <th>URL</th>
+                            <th style="width: 30px;" title="Status Code">SC</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+
+        <div id="right_column">
+            <section id="response" class="box">
+                <h2>Response</h2>
+
+                <div class="reload">Reload</div>
+                
+                <div class="status-code"></div>
+                
+                <div class="duration-time">
+                    <div class="duration"></div>
+                    <div class="time"></div>
+                </div>
+                
+                <div class="clear"></div>
+    
+                <h3>Headers</h3>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th style="width: 20%;">Name</th>
+                        <th style="width: 80%;">Value</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                
+                <div class="json">
+                    <h3>
+                        JSON
+                        <small>
+                            (<a href="#" class="collapse-all">Collapse All</a>
+                            | <a href="#" class="expand-all">Expand All</a>)
+                        </small>
+                    </h3>
+                    <p>
+                        <input id="json_search" placeholder="Search ...">
+                    </p>
+                    <div class="jsonbrowser"></div>
+                </div>
+                
+                <h3>Raw Body</h3>
+                <code class="rawbody"></code>
+            </section>
+        </div>
+        
+        <div id="loading_notice"></div>
+        
+        <footer>
+            © 2013 Philippe Gerber
+            • <a href="http://twitter.com/phphil">@phphil</a>
+            • <a href="http://github.com/bigwhoop/browsapi">github.com/bigwhoop/browsapi</a>
+        </footer>
+    </div>
+    
+    <script src="/lib/jquery-1.9.1.min.js"></script>
+    <script src="/lib/jquery.jsonbrowser.js/src/jquery.jsonbrowser.min.js"></script>
+    <script src="/lib/moment.min.js"></script>
+    <script src="/src/browsapi.js"></script>
+    <script src="/config.js"></script>
+    <script>
+        $(function() {
+            new browsapi.App();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+/* reset */
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+body, input, textarea, select, button {
+    font-family : Arial, sans-serif;
+    color       : #111;
+    font-size   : 15px;
+}
+
+h1, h2, h3 {
+    font-family : Raleway, Arial, sans-serif;
+    font-weight : 200;
+}
+
+header h1 {
+    font-size   : 55px;
+    margin      : 0 0 10px 10px;
+    color       : #fff;
+}
+
+header h1 small {
+    font-size : 24px;
+}
+
+h2 {
+    font-size : 18px;
+    margin    : 0 0 12px 0;
+    color     : #2b3239;
+}
+
+h3 {
+    font-family : Arial, sans-serif;
+    font-size   : 15px;
+    margin      : 20px 0 6px 0;
+    font-weight : 700;
+}
+
+h3 small {
+    display     : inline-block;
+    font-size   : 13px;
+    font-weight : normal;
+}
+
+a {
+    color : #444;
+}
+
+pre, code {
+    font-family : "Bitstream Vera Sans Mono", "DejaVu Sans Mono", Monaco, Consolas, monospace;
+    font-size   : 12px;
+    line-height : 1.1;
+    overflow    : auto;
+}
+
+table.table {
+    width        : 100%;
+    table-layout : fixed;
+    border       : 1px solid #111;
+}
+
+table.table th,
+table.table td {
+    font-size  : 13px;
+    text-align : left;
+    padding    : 3px 4px;
+    border     : 1px solid #111;
+    word-wrap  : break-word;
+}
+
+table.table th {
+    font-size        : 11px;
+    background-color : #111;
+    color            : #fff;
+    font-weight      : bold;
+    text-transform   : uppercase;
+}
+
+table.table td code {
+    font-size : 11px;
+}
+
+table tr.success {
+    /*background-color : #468847;*/
+}
+
+table tr.failure {
+    background-color : rgba(255, 92, 92, 0.51);
+}
+
+dl {
+    position : relative;
+    overflow : auto;
+}
+
+dt {
+    float       : left;
+    clear       : left;
+    width       : 70px;
+    padding     : 3px 0;
+    font-weight : 700;
+}
+
+dd {
+    margin-left : 80px;
+    padding     : 3px 0;
+}
+
+.clear {
+    clear : both;
+}
+
+input, select, button {
+    display        : inline-block;
+    line-height    : normal;
+    vertical-align : middle;
+    border-radius  : 4px;
+    border         : none;
+}
+
+input, select {
+    background-color : #fff;
+    background-image : -moz-linear-gradient(#fff 20%, #f6f6f6 50%, #eee 52%, #f4f4f4 100%);
+    background-image : -webkit-linear-gradient(#fff 20%, #f6f6f6 50%, #eee 52%, #f4f4f4 100%);
+    background-image : linear-gradient(#fff 20%, #f6f6f6 50%, #eee 52%, #f4f4f4 100%);
+    border           : 1px solid #aaa;
+    padding          : 4px 6px;
+    color            : #666;
+}
+
+input:hover, input:focus {
+    border           : 1px solid #aaa;
+    box-shadow       : 0 1px 0 #fff inset;
+    background-color : #eee;
+    background-image : -moz-linear-gradient(#eeeeee 20%, #ffffff 80%);
+    background-image : -webkit-linear-gradient(#eeeeee 20%, #ffffff 80%);
+    background-image : linear-gradient(#eeeeee 20%, #ffffff 80%);
+}
+
+input.has-selector {
+    border-top-right-radius    : 0;
+    border-bottom-right-radius : 0;
+    border-right               : none;
+}
+
+.selector {
+    display        : inline-block;
+    box-sizing     : border-box;
+    vertical-align : middle;
+    background     : #fff url('/arrow-down.png') no-repeat center;
+    border         : 1px solid #aaa;
+    padding        : 0 2px;
+    width          : 18px;
+    height         : 27px;
+    cursor         : pointer;
+    border-radius  : 4px;
+    border-top-left-radius    : 0;
+    border-bottom-left-radius : 0;
+}
+
+.selector:hover {
+    border-color     : #999;
+    background-color : #f9f9f9;
+}
+
+.active-selector {
+    background-image : url('/arrow-down-white.png');
+    background-color : #4F5A61 !important;
+    border-bottom-right-radius : 0;
+}
+
+.selection {
+    display          : none;
+    position         : absolute;
+    background-color : #4F5A61;
+    color            : #fff;
+    padding          : 7px;
+    border-radius    : 4px;
+    font-weight      : 700;
+    cursor           : pointer;
+}
+
+.selection li {
+    font-size : 17px;
+    padding   : 3px;
+}
+
+.selection li:hover {
+    border-radius    : 2px;
+    background-color : #fff;
+    color            : #4F5A61;
+}
+
+em {
+    font-style: italic;
+}
+
+button {
+    background-color : #4F5A61;
+    color            : #fff;
+    text-transform   : uppercase;
+    font-weight      : bold;
+    text-shadow      : -1px -1px 0 #2b3239;
+    padding          : 4px 6px;
+    cursor           : pointer;
+}
+
+button:hover {
+    background-color : #2b3239;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color : #2b3239;
+    background-image : -moz-linear-gradient(#1A2027 0%, #2b3239 20%) no-repeat fixed;
+    background-image : -webkit-linear-gradient(#1A2027 0%, #2b3239 20%) no-repeat fixed;
+    background-image : linear-gradient(#1A2027 0%, #2b3239 20%) no-repeat fixed;
+}
+
+
+
+
+
+
+
+
+
+#error {
+    position         : absolute;
+    width            : 700px;
+    top              : 0;
+    left             : 50%;
+    display          : none;
+    margin           : 0 0 0 -350px;
+    padding          : 10px;
+    background-color : #B94A48;
+    border           : 3px solid #a54442;
+    border-bottom-left-radius  : 5px;
+    border-bottom-right-radius : 5px;
+    color            : #fff;
+    font-size        : 22px;
+    cursor           : pointer;
+}
+
+#overlay {
+    z-index          : 1000;
+    background-color : #111;
+    opacity          : .7;
+    position         : fixed;
+    top              : 0;
+    left             : 0;
+    width            : 100%;
+    height           : 100%;
+    display          : none;
+}
+
+#browsapi {
+    padding : 20px;
+}
+
+.box, .dialog {
+    padding          : 20px;
+    background-color : #fff;
+    border-radius    : 6px;
+    margin           : 0 0 20px 0;
+    box-shadow       : 2px 3px 0 #111;
+}
+
+.dialog {
+    position         : absolute;
+    z-index          : 1001;
+}
+
+#configuration > div {
+    vertical-align : middle;
+}
+
+#conf_auth {
+    width : 135px;
+}
+
+#auth_basic, #auth_token {
+    display : none;
+}
+
+#auth_basic_user, #auth_basic_pass {
+    width : 100px;
+}
+
+#conf_headers {
+    margin-top : 10px;
+}
+
+#conf_headers span.label {
+    text-transform: uppercase;
+}
+
+#conf_headers span.headers a {
+    text-decoration : underline;
+}
+
+#conf_headers span.headers a span {
+    font-weight: 700;
+}
+
+#conf_header_dlg {
+    display: none;
+}
+
+#conf_header_dlg p {
+    margin : 5px 0;
+    text-align : center;
+}
+
+#conf_header_dlg .info {
+    text-align  : left;
+    margin      : 10px 0;
+    line-height : 120%;
+    width       : 300px;
+}
+
+#conf_header_dlg input {
+    width : 300px;
+}
+#conf_header_dlg button {
+    width : 300px;
+}
+
+#left_column {
+    float   : left;
+    width   : 320px;
+}
+
+#right_column {
+    margin-left : 340px;
+    overflow    : auto;
+}
+
+
+#request, #request_log, #response {
+    display : none;
+}
+
+#rqst_host {
+    width : 200px;
+}
+
+#rqst_path {
+    width : 280px;
+}
+
+.status-code {
+    float         : left;
+    display       : inline-block;
+    color         : #fff;
+    padding       : 12px 8px;
+    margin        : 0 10px 0 0;
+    font-size     : 38px;
+    font-weight   : 200;
+    border-radius : 3px;
+}
+
+.status-success {
+    background-color : #468847;
+}
+
+.status-failure {
+    background-color : #B94A48;
+}
+
+.duration-time {
+    float   : left;
+    display : inline-block;
+    padding : 12px 0 0 8px;
+}
+
+.duration {
+    font-size     : 24px;
+    margin-bottom : 2px;
+}
+
+.time {
+    font-size : 11px;
+}
+
+.reload {
+    float        : right;
+    background   : url('/reload.png') no-repeat left center;
+    padding-left : 30px;
+    line-height  : 26px;
+    font-weight  : 700;
+    cursor       : pointer;
+}
+
+.jsonbrowser {
+    padding : 10px;
+    background-color : #f4f4f4;
+}
+
+#json_search {
+    width: 300px;
+    margin-bottom : 3px;
+}
+
+.rawbody {
+    display : block;
+}
+
+#loading_notice {
+    display    : none;
+    background : transparent url('/loading.gif') no-repeat center;
+    height     : 66px;
+    margin     : 20px 0;
+}
+
+footer {
+    text-align    : center;
+    margin-bottom : 30px;
+    font-size     : 11px;
+    color         : #aaa;
+}
+
+footer a {
+    color : #aaa;
+}

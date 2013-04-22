@@ -1,0 +1,3 @@
+[submodule "www/lib/jquery.jsonbrowser.js"]
+	path = www/lib/jquery.jsonbrowser.js
+	url = git://github.com/bigwhoop/jquery.jsonbrowser.js.git
