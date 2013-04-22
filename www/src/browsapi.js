@@ -578,13 +578,15 @@ var browsapi = {
     /**
      * The request log.
      *
+     * @param {Object} requestLogStore
      * @constructor
      */
-    RequestLogView: function() {
+    RequestLogView: function(requestLogStore) {
         var view = this;
 
         var $container = $('#request_log');
         var $tbody     = $container.find('tbody');
+        var $clearBtn  = $container.find('.clear-log');
 
         view.show = function() {
             $container.show();
@@ -592,6 +594,11 @@ var browsapi = {
         
         view.hide = function() {
             $container.hide();
+        };
+        
+        view.clearEntries = function() {
+            $tbody.empty();
+            view.hide();
         };
         
         /**
@@ -620,6 +627,13 @@ var browsapi = {
             
             view.show();
         };
+
+        $clearBtn.on('click', function(e) {
+            e.preventDefault();
+            requestLogStore.clear(function() {
+                view.clearEntries();
+            });
+        });
     },
 
 
@@ -703,14 +717,14 @@ var browsapi = {
         var $container = $('#browsapi');
         var $h1        = $container.find('header h1');
 
+        var requestLogStore = new browsapi.Storage(browsapi.Config.requestLogType, 'request-log');
+
         var errorView        = new browsapi.ErrorView();
         var loaderView       = new browsapi.LoaderView();
         var configuratorView = new browsapi.ConfiguratorView(app, errorView);
         var requestView      = new browsapi.RequestView(app);
-        var requestLogView   = new browsapi.RequestLogView();
+        var requestLogView   = new browsapi.RequestLogView(requestLogStore);
         var responseView     = new browsapi.ResponseView(app);
-
-        var requestLogStore = new browsapi.Storage(browsapi.Config.requestLogType, 'request-log');
         
         /**
          * @param {jQuery} $tbody
@@ -792,6 +806,7 @@ var browsapi = {
             $('title').text(browsapi.Config.configFilePath + ' - Browsa Pi v' + browsapi.Config.version);
         }
         
+        // Restore request log
         requestLogStore.retrieveAll(function(entries) {
             for (var i in entries) {
                 if (!entries[i] || !entries[i].rsp || !entries[i].rqst) {
