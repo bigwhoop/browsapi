@@ -111,19 +111,22 @@ dd {
 }
 
 input, select, button {
-    border             : 1px solid #aaa;
+    border             : none;
+    border-bottom      : 2px dotted #aaa;
+    background-color   : #fafafa;
     vertical-align     : middle;
-    border-radius      : 4px;
     height             : 29px;
-    padding            : 4px 4px;
+    padding            : 2px;
     box-sizing         : border-box;
     -moz-box-sizing    : border-box;
     -webkit-box-sizing : border-box;
 }
 
 button {
+    border-radius    : 4px;
+    padding          : 4px 6px;
     background-color : #4F5A61;
-    border-color     : #4F5A61;
+    border           : none;
     color            : #fff;
     text-transform   : uppercase;
     font-weight      : bold;
@@ -133,24 +136,15 @@ button {
 
 button:hover {
     background-color : #2b3239;
-    border-color     : #2b3239;
 }
 
 input, select {
-    background-color : #fff;
-    background-image : -moz-linear-gradient(#fff 20%, #f6f6f6 50%, #eee 52%, #f4f4f4 100%);
-    background-image : -webkit-linear-gradient(#fff 20%, #f6f6f6 50%, #eee 52%, #f4f4f4 100%);
-    background-image : linear-gradient(#fff 20%, #f6f6f6 50%, #eee 52%, #f4f4f4 100%);
-    color            : #666;
+    color : #666;
 }
 
 input:hover, input:focus {
-    border-color     : #aaa;
-    box-shadow       : 0 1px 0 #fff inset;
     background-color : #eee;
-    background-image : -moz-linear-gradient(#eeeeee 20%, #ffffff 80%);
-    background-image : -webkit-linear-gradient(#eeeeee 20%, #ffffff 80%);
-    background-image : linear-gradient(#eeeeee 20%, #ffffff 80%);
+    border-color     : #888;
 }
 
 input.has-selector {

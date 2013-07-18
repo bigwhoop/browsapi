@@ -744,7 +744,7 @@ var browsapi = {
         };
 
         var minimizeContainer = function() {
-            $container.animate({ marginTop: '-125' }, 800);
+            $container.animate({ marginTop: '-138' }, 800);
         };
 
         /**
