@@ -7,10 +7,9 @@ a neat little web interface.
 
 ## Features
 
- * Easy setup
  * Per-project configuration
  * Cross-origin access
- * (Persistent) Request Log
+ * (Persistent) requests log
  * JSON inspector
 
 
@@ -21,13 +20,13 @@ I assume you've installed *go* and properly configured your `GOPATH` environment
 ### *nix
 
     go get -u github.com/bigwhoop/browsapi
-    cd $GOPATH\src\github.com\bigwhoop\browsapi
+    cd $GOPATH/src/github.com/bigwhoop/browsapi
     git submodule init && git submodule update
 
 ### Windows
 
     go get -u github.com/bigwhoop/browsapi
-    cd %GOPATH%/src/github.com/bigwhoop/browsapi
+    cd %GOPATH%\src\github.com\bigwhoop\browsapi
     git submodule init && git submodule update
 
 
@@ -89,9 +88,11 @@ The `server.request_log` directive can be one of the following:
 * `server` to store the data in a file on the server. The file must be specified using `server.request_log_path`.
 * `memory` to only store the log as long as the browser is not reloaded.
 
-To use a config file, just pass the path to it as the first argument to the binary.
+To use a config file, just pass its path as the first argument to the binary.
 
-    browsapi /path/to/browsapi.json
+    browsapi /path/to/config.json
+
+If a file named `browsapi.json` exists in the current working directory, it will automatically be selected.
 
 
 ### JSON inspector
