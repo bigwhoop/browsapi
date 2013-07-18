@@ -27,13 +27,12 @@ func main() {
 	flag.Parse()
 
 	configPath = flag.Arg(0)
+	if len(configPath) == 0 {
+		configPath = DefaultConfigFile
+	}
 
 	// If --init is passed, we create a new config file at the path specified by configPath
 	if *init {
-		if len(configPath) == 0 {
-			configPath = DefaultConfigFile
-		}
-
 		if err := config.CreateFile(configPath); err != nil {
 			fmt.Printf("Failed to create config file.\nError: %s\n", err.Error())
 			os.Exit(1)

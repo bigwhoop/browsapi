@@ -6,7 +6,7 @@ var browsapi = {
         endpoints      : {},
         paths          : {},
         timeFormat     : 'HH:mm:ss',
-        dateFormat     : 'MMMM Do YYYY',
+        dateFormat     : 'YYYY-DD-MM',
 
         /**
          * @param {String} version
