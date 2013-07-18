@@ -6,7 +6,7 @@ var browsapi = {
         endpoints      : {},
         paths          : {},
         timeFormat     : 'HH:mm:ss',
-        dateTimeFormat : 'MMMM Do YYYY, HH:mm:ss',
+        dateFormat     : 'MMMM Do YYYY',
 
         /**
          * @param {String} version
@@ -614,12 +614,15 @@ var browsapi = {
             });
             
             var time = moment(response.response.time);
+            var dateStr = time.format(browsapi.Config.dateFormat);
+            var timeStr = time.format(browsapi.Config.timeFormat);
             
             var $tr = $('<tr></tr>');
             $tr.addClass(response.response.status_code == 200 ? 'success' : 'failure');
             $tr.append(
-                '<td title="' + time.format(browsapi.Config.dateTimeFormat) + '">' +
-                time.format(browsapi.Config.timeFormat) + '</td>'
+                '<td class="nowrap" title="' + dateStr + ' ' + timeStr + '">'
+                + (moment().isSame(time, 'day') ? timeStr : dateStr)
+                + '</td>'
             );
             $tr.append($('<td>' + request.method + ' </td>').append($a));
             $tr.append('<td>' + response.response.status_code + '</td>')
@@ -669,7 +672,7 @@ var browsapi = {
             $rspStatusCode.text(data.status_code);
             $rspDuration.text(data.duration);
             $rspTime.text(moment(data.time).format(browsapi.Config.dateTimeFormat));
-            $rspBodyRaw.text(data.body);
+            $rspBodyRaw.html(app.escapeHTML(data.body).replace(/\r/g, '').replace(/\n/g, '<br>'));
             app.addHeadersToTable($rspHeaders.find('tbody'), data.headers);
             
             try {
@@ -748,7 +751,7 @@ var browsapi = {
          * @param {String} html
          * @returns {String}
          */
-        var escapeHTML = function(html) {
+        app.escapeHTML = function(html) {
             return $('<div>').text(html).html();
         };
 
@@ -779,7 +782,7 @@ var browsapi = {
          * @param msg
          */
         var onRequestFail = function(jqXHR, status, msg) {
-            errorView.showMessage(msg + ': ' + escapeHTML(jqXHR.responseText));
+            errorView.showMessage(msg + ': ' + app.escapeHTML(jqXHR.responseText));
             loaderView.hide();
         };
 
@@ -808,27 +811,46 @@ var browsapi = {
         
         // Restore request log
         requestLogStore.retrieveAll(function(entries) {
-            for (var i in entries) {
-                if (!entries[i] || !entries[i].rsp || !entries[i].rqst) {
+            var sortable = [];
+            
+            for (var key in entries) {
+                if (!entries[key]) {
                     continue;
                 }
                 
-                requestLogView.addEntry(
-                    entries[i].rsp,
-                    new browsapi.Request(
-                        entries[i].rqst.method,
+                var entry = entries[key];
+                if (!entry.rsp || !entry.rqst) {
+                    continue;
+                }
+                
+                sortable.push({
+                    timestamp: key,
+                    rsp: entry.rsp,
+                    rqst: new browsapi.Request(
+                        entry.rqst.method,
                         new browsapi.Endpoint(
-                            entries[i].rqst.endpoint.host,
-                            entries[i].rqst.endpoint.auth,
-                            entries[i].rqst.endpoint.headers,
-                            entries[i].rqst.endpoint.username,
-                            entries[i].rqst.endpoint.password
+                            entry.rqst.endpoint.host,
+                            entry.rqst.endpoint.auth,
+                            entry.rqst.endpoint.headers,
+                            entry.rqst.endpoint.username,
+                            entry.rqst.endpoint.password
                         ),
-                        entries[i].rqst.path
-                    ),
+                        entry.rqst.path
+                    )
+                });
+            }
+            
+            sortable.sort(function(a, b) {
+                return a.timestamp - b.timestamp;
+            });
+            
+            $.each(sortable, function(_, entry) {
+                requestLogView.addEntry(
+                    entry.rsp,
+                    entry.rqst,
                     onLogEntryClicked
                 );
-            }
+            });
         });
     },
 

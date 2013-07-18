@@ -141,7 +141,7 @@ func configHandler(rsp http.ResponseWriter, rqst *http.Request) {
 	}
 }
 
-// storageHandler allows saving of 
+// storageHandler allows saving of
 func storageHandler(rsp http.ResponseWriter, rqst *http.Request) {
 	ns := rqst.URL.Query().Get("ns")
 	storage, found := storages[ns]

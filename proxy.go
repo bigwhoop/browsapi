@@ -18,7 +18,7 @@ import (
 //   }
 //
 // The result for key 'headers' would be:
-// 
+//
 //   map[string]string{
 //       "foo": "bar",
 //       "baz": "boz",
