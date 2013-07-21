@@ -102,9 +102,10 @@ Please refer to the [jquery.jsonbrowser.js](https://github.com/bigwhoop/jquery.j
 
 ## TODOs
 
+ * Support for POST data and raw bodies
+ * Statistics (Benchmarking?)
  * Cross-browser testing
  * Tests ...
- * Statistics
 
 
 ## License

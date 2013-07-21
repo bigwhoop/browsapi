@@ -272,20 +272,23 @@ var browsapi = {
         view.showEndpoint = function(endpoint) {
             headersView.setHeaders(endpoint.headers);
             hostView.setValue(endpoint.host);
-
+            
+            $confAuth.val(endpoint.auth).trigger('change');
             if (endpoint.auth == 'basic') {
-                $confAuth.val(endpoint.auth);
                 $confBasicAuthUser.val(endpoint.username);
                 $confBasicAuthPass.val(endpoint.password);
             }
         };
 
         var onAuthTypeChanged = function() {
-            $confBasicAuth.hide();
             switch ($confAuth.val())
             {
                 case 'basic':
                     $confBasicAuth.show();
+                    break;
+                
+                default:
+                    $confBasicAuth.hide();
                     break;
             }
         };
@@ -458,9 +461,7 @@ var browsapi = {
         var createShowEndpointHandler = function(endpoint) {
             return function() {
                 configuratorView.showEndpoint(endpoint);
-                
-                // Hide selector
-                $(this).parents('.selection').prev('.selector').trigger('click');
+                $(this).parents('.selection').prev('.selector').trigger('click'); // Hide selector
             };
         };
 
@@ -744,7 +745,7 @@ var browsapi = {
         };
 
         var minimizeContainer = function() {
-            $container.animate({ marginTop: '-138' }, 800);
+            $container.animate({ marginTop: '-128' }, 800);
         };
 
         /**

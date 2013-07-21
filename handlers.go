@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -106,10 +107,10 @@ func configHandler(rsp http.ResponseWriter, rqst *http.Request) {
 	rsp.WriteHeader(200)
 
 	fmt.Fprintf(rsp, "browsapi.Config.setVersion('%s');\n\n", Version)
-	fmt.Fprintf(rsp, "browsapi.Config.setRequestLogType('%s');\n\n", config.Server.RequestLog)
+	fmt.Fprintf(rsp, "browsapi.Config.setRequestLogType('%s');\n\n", template.JSEscapeString(config.Server.RequestLog))
 
 	if len(configPath) > 0 {
-		fmt.Fprintf(rsp, "browsapi.Config.setLoadedConfigFileName('%s');\n\n", filepath.Base(configPath))
+		fmt.Fprintf(rsp, "browsapi.Config.setLoadedConfigFileName('%s');\n\n", template.JSEscapeString(filepath.Base(configPath)))
 	}
 
 	for alias, endpoint := range config.Client.Endpoints {
@@ -125,19 +126,24 @@ func configHandler(rsp http.ResponseWriter, rqst *http.Request) {
 		fmt.Fprintf(
 			rsp,
 			"browsapi.Config.setEndpoint('%s', new browsapi.Endpoint('%s', '%s', %s, '%s', '%s'));\n",
-			alias,
-			endpoint.GetHost(),
-			endpoint.GetAuth(),
+			template.JSEscapeString(alias),
+			template.JSEscapeString(endpoint.GetHost()),
+			template.JSEscapeString(endpoint.GetAuth()),
 			headers,
-			endpoint.GetUsername(),
-			endpoint.GetPassword(),
+			template.JSEscapeString(endpoint.GetUsername()),
+			template.JSEscapeString(endpoint.GetPassword()),
 		)
 	}
 
 	fmt.Fprintf(rsp, "\n")
 
 	for alias, path := range config.Client.Paths {
-		fmt.Fprintf(rsp, "browsapi.Config.setPath('%s', '%s');\n", alias, path)
+		fmt.Fprintf(
+			rsp,
+			"browsapi.Config.setPath('%s', '%s');\n",
+			template.JSEscapeString(alias),
+			template.JSEscapeString(path),
+		)
 	}
 }
 
