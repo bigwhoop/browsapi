@@ -56,7 +56,6 @@ var browsapi = {
          * @returns {String}
          */
         replaceUserOptions: function(value) {
-            console.log(value);
             for (var key in this.userOptions) {
                 var regex = new RegExp('{{' + key + '}}', 'g');
                 value = value.replace(regex, this.getUserOptionValue(key));
@@ -367,11 +366,24 @@ var browsapi = {
         var $confBasicAuthUser  = $sectionConfig.find('#auth_basic_user');
         var $confBasicAuthPass  = $sectionConfig.find('#auth_basic_pass');
 
-        var optionsView = new browsapi.OptionsConfiguratorView();
         var headersView = new browsapi.HeadersConfiguratorView();
         var hostView    = new browsapi.HostConfiguratorView(view);
         var pathView    = new browsapi.PathConfiguratorView();
 
+        if (browsapi.Config.hasUserOptions()) {
+            var optionsView = new browsapi.OptionsConfiguratorView();
+            $(function() {
+                optionsView.showDialog();
+            });
+        }
+
+        /**
+         * @param {String} path
+         */
+        view.setPath = function(path) {
+            pathView.setValue(path);
+        };
+        
         /**
          * @param {browsapi.Config.Host} host
          */
@@ -384,6 +396,23 @@ var browsapi = {
                 $confBasicAuthUser.val(browsapi.Config.replaceUserOptions(host.username));
                 $confBasicAuthPass.val(browsapi.Config.replaceUserOptions(host.password));
             }
+        };
+
+        /**
+         * @returns {browsapi.Request}
+         */
+        view.getPreparedRequest = function() {
+            return new browsapi.Request(
+                $confMethod.val(),
+                new browsapi.Host(
+                    hostView.getValue(),
+                    $confAuth.val(),
+                    headersView.getHeaders(),
+                    $confBasicAuthUser.val(),
+                    $confBasicAuthPass.val()
+                ),
+                pathView.getNormalizedValue()
+            );
         };
 
         var onAuthTypeChanged = function() {
@@ -412,19 +441,7 @@ var browsapi = {
                 return;
             }
             
-            var request = new browsapi.Request(
-                $confMethod.val(),
-                new browsapi.Host(
-                    host,
-                    $confAuth.val(),
-                    headersView.getHeaders(),
-                    $confBasicAuthUser.val(),
-                    $confBasicAuthPass.val()
-                ),
-                pathView.getNormalizedValue()
-            );
-            
-            app.makeRequest(request);
+            app.makeRequest(view.getPreparedRequest());
         };
 
         $confAuth.on('change', onAuthTypeChanged);
@@ -455,20 +472,25 @@ var browsapi = {
      * @constructor
      */
     OptionsConfiguratorView: function() {
+        var view = this;
         var $confOptions = $('#conf_options');
         
-        if (browsapi.Config.hasUserOptions()) {
-            var optionsDlg = new browsapi.OptionsDialogView(
-                browsapi.Config.userOptions,
-                function(options) {
-                    browsapi.Config.userOptions = options;
-                }
-            );
-            $confOptions.on('click', function() {
-                optionsDlg.show();
-            });
-            $confOptions.show();
-        }
+        var optionsDlg = new browsapi.OptionsDialogView(
+            browsapi.Config.userOptions,
+            function(options) {
+                browsapi.Config.userOptions = options;
+            }
+        );
+        
+        $confOptions.on('click', function() {
+            optionsDlg.show();
+        });
+
+        $confOptions.show();
+        
+        view.showDialog = function() {
+            optionsDlg.show();
+        };
     },
     
 
@@ -799,8 +821,10 @@ var browsapi = {
         /**
          * @param {Object} data                 The response data from the server.
          * @param {browsapi.Request} request    The request that was sent to the server.
+         * @param {Function} onAPIPathClicked   Triggered when an URL in the returned content references
+         *                                      the same host as the inital request.
          */
-        view.setResponseData = function(data, request) {
+        view.setResponseData = function(data, request, onAPIPathClicked) {
             $rspStatusCode.text(data.status_code);
             $rspDuration.text(data.duration);
             $rspTime.text(moment(data.time).format(browsapi.Config.dateTimeFormat));
@@ -809,9 +833,25 @@ var browsapi = {
             
             try {
                 var bodyData = JSON.parse(data.body);
-                $rspBodyJsonBrowser.jsonbrowser(bodyData);
+                $rspBodyJsonBrowser.jsonbrowser(
+                    bodyData,
+                    {
+                        urlFormatter: function(url) {
+                            var markup = $.jsonbrowser.urlFormatter(url);
+                            if (url.indexOf(request.host.url) == 0) {
+                                markup = $(markup);
+                                markup.on('click', function(e) {
+                                    e.preventDefault();
+                                    var parser = document.createElement('a');
+                                    parser.href = $(this).attr('href');
+                                    onAPIPathClicked(url, parser.pathname);
+                                });
+                            }
+                            return markup;
+                        }
+                    }
+                );
                 $rspBodyJson.show();
-                //$rspBodyJsonSearch.trigger('keyup');
             } catch (e) {
                 $rspBodyJson.hide();
             }
@@ -888,12 +928,26 @@ var browsapi = {
         };
 
         /**
+         * This function is called when an URL to the same host is found in
+         * the response of a proxied request. We'll then capture the click
+         * event of this URL and start a new proxy request after setting the
+         * path.
+         * 
+         * @param {String} url
+         * @param {String} path
+         */
+        var onAPIPathClicked = function(url, path) {
+            configuratorView.setPath(path);
+            app.makeRequest(configuratorView.getPreparedRequest());
+        };
+
+        /**
          * @param {Object} response             The response data from the server.
          * @param {browsapi.Request} request    The request that was sent to the server.
          */
         var onLogEntryClicked = function(response, request) {
             requestView.setResponseData(response.request);
-            responseView.setResponseData(response.response, request);
+            responseView.setResponseData(response.response, request, onAPIPathClicked);
         };
 
         /**
@@ -904,7 +958,7 @@ var browsapi = {
             requestView.setResponseData(response.request);
             requestLogView.addEntry(response, request, onLogEntryClicked);
             requestLogStore.store(moment(response.request.time).unix(), { 'rsp': response, 'rqst': request });
-            responseView.setResponseData(response.response, request);
+            responseView.setResponseData(response.response, request, onAPIPathClicked);
             loaderView.hide();
         };
 
