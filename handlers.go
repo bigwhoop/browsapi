@@ -107,37 +107,48 @@ func configHandler(rsp http.ResponseWriter, rqst *http.Request) {
 	rsp.WriteHeader(200)
 
 	fmt.Fprintf(rsp, "browsapi.Config.setVersion('%s');\n\n", Version)
-	fmt.Fprintf(rsp, "browsapi.Config.setRequestLogType('%s');\n\n", template.JSEscapeString(config.Server.RequestLog))
+	fmt.Fprintf(rsp, "browsapi.Config.setRequestLogType('%s');\n\n", template.JSEscapeString(config.RequestLog))
 
 	if len(configPath) > 0 {
 		fmt.Fprintf(rsp, "browsapi.Config.setLoadedConfigFileName('%s');\n\n", template.JSEscapeString(filepath.Base(configPath)))
 	}
 
-	for alias, endpoint := range config.Client.Endpoints {
-		if endpoint.Ignore {
+	for name, description := range config.Params {
+		fmt.Fprintf(
+			rsp,
+			"browsapi.Config.setUserOption(new browsapi.UserOption('%s', '%s'));\n",
+			template.JSEscapeString(name),
+			template.JSEscapeString(description),
+		)
+	}
+
+	fmt.Fprintf(rsp, "\n")
+
+	for _, host := range config.Servers {
+		if host.Ignore {
 			continue
 		}
 
-		headers, err := json.Marshal(endpoint.GetHeaders())
+		headers, err := json.Marshal(host.GetHeaders())
 		if err != nil {
 			continue
 		}
 
 		fmt.Fprintf(
 			rsp,
-			"browsapi.Config.setEndpoint('%s', new browsapi.Endpoint('%s', '%s', %s, '%s', '%s'));\n",
-			template.JSEscapeString(alias),
-			template.JSEscapeString(endpoint.GetHost()),
-			template.JSEscapeString(endpoint.GetAuth()),
+			"browsapi.Config.setHost('%s', new browsapi.Host('%s', '%s', %s, '%s', '%s'));\n",
+			template.JSEscapeString(host.Name),
+			template.JSEscapeString(host.GetURL()),
+			template.JSEscapeString(host.GetAuth()),
 			headers,
-			template.JSEscapeString(endpoint.GetUsername()),
-			template.JSEscapeString(endpoint.GetPassword()),
+			template.JSEscapeString(host.GetUsername()),
+			template.JSEscapeString(host.GetPassword()),
 		)
 	}
 
 	fmt.Fprintf(rsp, "\n")
 
-	for alias, path := range config.Client.Paths {
+	for alias, path := range config.Requests {
 		fmt.Fprintf(
 			rsp,
 			"browsapi.Config.setPath('%s', '%s');\n",

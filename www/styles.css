@@ -272,6 +272,20 @@ body {
     vertical-align : middle;
 }
 
+#conf_options,
+#conf_options_dlg {
+    display: none;
+}
+
+#conf_options_dlg p {
+    margin : 5px 0;
+}
+
+#conf_options_dlg input,
+#conf_options_dlg button {
+    width : 500px;
+}
+
 #conf_auth {
     width : 135px;
 }

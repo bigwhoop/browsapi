@@ -58,9 +58,9 @@ The format of configuration files is JSON. Here is an example with all available
             "request_log": "client"
         },
         "client": {
-            "endpoints": {
+            "hosts": {
                 "Development": {
-                    "host": "https://api.example.dev",
+                    "url": "https://api.example.dev",
                     "headers": {
                         "Accept": "application/json",
                         "Accept-Language": "en"
@@ -68,7 +68,7 @@ The format of configuration files is JSON. Here is an example with all available
                 },
                 "Production": {
                     "extend": "Development",
-                    "host": "https://api.example.com",
+                    "url": "https://api.example.com",
                     "auth": "basic",
                     "username": "foo",
                     "password": "bar"

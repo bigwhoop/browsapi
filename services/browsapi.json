@@ -1,0 +1,13 @@
+{
+    "port": 8686,
+    "request_log": "client",
+    "servers": {
+        "default": {
+            "name": "Default",
+            "url": "http://localhost:8686"
+        }
+    },
+    "requests": {
+        "Configuration": "config.js"
+    }
+}

@@ -1,0 +1,41 @@
+{
+    "port": 8686,
+    "request_log": "memory",
+    "params": {
+        "gh_user": "Your GitHub username",
+        "gh_pass": "Your GitHub password"
+    },
+    "servers": {
+        "no_auth": {
+            "name": "No Auth",
+            "url": "https://api.github.com",
+            "headers": {
+                "Content-Type": "application/vnd.github+json"
+            }
+        },
+        "basic_auth": {
+            "extend": "no_auth",
+            "name": "Basic Auth",
+            "auth": "basic",
+            "username": "{{gh_user}}",
+            "password": "{{gh_pass}}"
+        },
+        "oauth": {
+            "extend": "no_auth",
+            "name": "OAuth",
+            "auth": "oauth",
+            "auth_url": "https://api.github.com/authorizations",
+            "auth_post": "{\"scopes\": [\"repo\"]}",
+            "username": "{{gh_user}}",
+            "password": "{{gh_pass}}"
+        }
+    },
+    "requests": {
+        "Your profile": "/users/{{gh_user}}",
+        "Your repositories": "/users/{{gh_user}}/repos",
+        "browsapi repository": "/repos/bigwhoop/browsapi",
+        "browsapi events": "/repos/bigwhoop/browsapi/events",
+        "browsapi issue": "/repos/bigwhoop/browsapi/issues",
+        "browsapi issue events": "/repos/bigwhoop/browsapi/issues/events"
+    }
+}

@@ -27,9 +27,6 @@ func main() {
 	flag.Parse()
 
 	configPath = flag.Arg(0)
-	if len(configPath) == 0 {
-		configPath = DefaultConfigFile
-	}
 
 	// If --init is passed, we create a new config file at the path specified by configPath
 	if *init {
@@ -51,11 +48,19 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+	} else {
+		var err error
+		if err = config.ReadFile(DefaultConfigFile); err == nil {
+			configPath, err = filepath.Abs(configPath)
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	// Create request log
-	if len(config.Server.RequestLogPath) > 0 {
-		storage, err := NewFileStorage(config.Server.RequestLogPath)
+	if len(config.RequestLogPath) > 0 {
+		storage, err := NewFileStorage(config.RequestLogPath)
 		if err != nil {
 			fmt.Printf("Failed to create/load request log.\nError: %s\n", err.Error())
 			os.Exit(1)
@@ -84,8 +89,8 @@ func main() {
 
 	fmt.Printf(
 		"Browsa Pi v%s\n\n   Config file : %s\n  Static files : %s\n           URL : http://localhost:%d/\n\n",
-		Version, configPathName, webDir, config.Server.GetPort(),
+		Version, configPathName, webDir, config.GetPort(),
 	)
 
-	http.ListenAndServe(fmt.Sprintf(":%d", config.Server.GetPort()), mux)
+	http.ListenAndServe(fmt.Sprintf(":%d", config.GetPort()), mux)
 }

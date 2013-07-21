@@ -17,6 +17,10 @@ const (
 
 	NoAuth    = "none"
 	BasicAuth = "basic"
+
+	RequestLogMemory = "memory"
+	RequestLogClient = "client"
+	RequestLogServer = "server"
 )
 
 var (
@@ -24,34 +28,49 @@ var (
 	configPath = ""
 
 	// The default config object
-	defaultConfig = &Config{
-		Server: &ServerConfig{
-			Port:       DefaultPort,
-			RequestLog: "client",
-		},
-		Client: &ClientConfig{
-			Endpoints: make(map[string]*EndpointConfig, 0),
-		},
-	}
+	defaultConfig = NewConfig()
 
 	// The global config object
 	config = defaultConfig
 )
 
-// NewConfig creates a new config with all pointers initializes
+// NewConfig creates a new config with all fields initializes
 func NewConfig() *Config {
 	return &Config{
-		Server: &ServerConfig{},
-		Client: &ClientConfig{
-			Endpoints: make(map[string]*EndpointConfig, 0),
-		},
+		Port:       DefaultPort,
+		RequestLog: RequestLogMemory,
+		Params:     make(ParamsConfig, 0),
+		Servers:    make(ServersConfig, 0),
+		Requests:   make(RequestsConfig, 0),
 	}
 }
 
 // Config is the main configuration struct
 type Config struct {
-	Server *ServerConfig `json:"server,omitempty"`
-	Client *ClientConfig `json:"client,omitempty"`
+	// The port, where Browsa Pi will listen on.
+	Port int `json:"port,omitempty"`
+
+	// Can either be 'server', 'client' or 'memory'.
+	RequestLog string `json:"request_log,omitempty"`
+
+	// If RequestLog is 'server', this directive specifies the file,
+	// where the server stores the log.
+	RequestLogPath string `json:"request_log_path,omitempty"`
+
+	// User params that can be used in server and request configurations.
+	Params ParamsConfig `json:"params,omitempty"`
+
+	Servers  ServersConfig  `json:"servers,omitempty"`
+	Requests RequestsConfig `json:"requests,omitempty"`
+}
+
+// GetPort returns the user-specified port, or the default port
+// if no custom port was configured.
+func (this Config) GetPort() int {
+	if this.Port > 0 {
+		return this.Port
+	}
+	return DefaultPort
 }
 
 // ReadFile reads a JSON file into the Config struct
@@ -88,62 +107,40 @@ func (this *Config) CreateFile(path string) error {
 	return nil
 }
 
-// ServerConfig holds the configuration for the Go web service.
+type ParamsConfig map[string]string
+
+type ServersConfig map[string]*ServerConfig
+
 type ServerConfig struct {
-	// The port, where Browsa Pi will listen on.
-	Port int `json:"port,omitempty"`
-
-	// Can either be 'server', 'client' or 'memory'.
-	RequestLog string `json:"request_log,omitempty"`
-
-	// If RequestLog is 'server', this directive specifies the file,
-	// where the server stores the log.
-	RequestLogPath string `json:"request_log_path,omitempty"`
-}
-
-// GetPort returns the user-specified port, or the default port
-// if no custom port was configured.
-func (this ServerConfig) GetPort() int {
-	if this.Port > 0 {
-		return this.Port
-	}
-	return DefaultPort
-}
-
-// ClientConfig holds the configuration for the JS app.
-type ClientConfig struct {
-	Endpoints map[string]*EndpointConfig `json:"endpoints,omitempty"`
-	Paths     map[string]string          `json:"paths,omitempty"`
-}
-
-type EndpointConfig struct {
 	Ignore   bool              `json:"ignore",omitempty`
 	Extend   string            `json:"extend,omitempty"`
-	Host     string            `json:"host,omitempty"`
+	Name     string            `json:"name,omitempty"`
+	URL      string            `json:"url,omitempty"`
 	Headers  map[string]string `json:"headers,omitempty"`
 	Auth     string            `json:"auth,omitempty"`
+	AuthURL  string            `json:"auth_url,omitempty"`
+	AuthPost string            `json:"auth_post,omitempty"`
 	Username string            `json:"username,omitempty"`
 	Password string            `json:"password,omitempty"`
 }
 
-// getParent tries to find the parent of this endpoint,
-// specified by the Extend field.
-func (this EndpointConfig) getParent() *EndpointConfig {
-	return config.Client.Endpoints[this.Extend]
+// getParent tries to find the parent of this host, specified by the Extend field.
+func (this ServerConfig) getParent() *ServerConfig {
+	return config.Servers[this.Extend]
 }
 
-func (this EndpointConfig) GetHost() string {
-	if len(this.Host) > 0 {
-		return this.Host
+func (this ServerConfig) GetURL() string {
+	if len(this.URL) > 0 {
+		return this.URL
 	}
 	p := this.getParent()
 	if p != nil {
-		return p.GetHost()
+		return p.GetURL()
 	}
 	return ""
 }
 
-func (this EndpointConfig) GetHeaders() map[string]string {
+func (this ServerConfig) GetHeaders() map[string]string {
 	if len(this.Headers) > 0 {
 		return this.Headers
 	}
@@ -154,7 +151,8 @@ func (this EndpointConfig) GetHeaders() map[string]string {
 	return make(map[string]string, 0)
 }
 
-func (this EndpointConfig) GetAuth() string {
+// GetAuth returns the used auth type
+func (this ServerConfig) GetAuth() string {
 	if len(this.Auth) > 0 {
 		return this.Auth
 	}
@@ -165,7 +163,7 @@ func (this EndpointConfig) GetAuth() string {
 	return ""
 }
 
-func (this EndpointConfig) GetUsername() string {
+func (this ServerConfig) GetUsername() string {
 	if len(this.Username) > 0 {
 		return this.Username
 	}
@@ -176,7 +174,7 @@ func (this EndpointConfig) GetUsername() string {
 	return ""
 }
 
-func (this EndpointConfig) GetPassword() string {
+func (this ServerConfig) GetPassword() string {
 	if len(this.Password) > 0 {
 		return this.Password
 	}
@@ -186,6 +184,15 @@ func (this EndpointConfig) GetPassword() string {
 	}
 	return ""
 }
+
+type RequestsConfig map[string]string
+
+/*type RequestsConfig map[string]*RequestConfig
+
+type RequestConfig struct {
+	Path      string            `json:"url,omitempty"`
+	Server    string            `json:"url,omitempty"`
+}*/
 
 // reloadConfig tries to reload the configuration file passed on start-up. If the config file
 // is not loadable the old configuration will not be overwritten.

@@ -3,8 +3,9 @@ var browsapi = {
         version        : '',
         configFilePath : '',
         requestLogType : '',
-        endpoints      : {},
+        hosts          : {},
         paths          : {},
+        userOptions    : {},
         timeFormat     : 'HH:mm:ss',
         dateFormat     : 'YYYY-DD-MM',
 
@@ -30,11 +31,52 @@ var browsapi = {
         },
 
         /**
-         * @param {String} alias
-         * @param {String} endpoint
+         * @param {browsapi.Config.UserOption} option
          */
-        setEndpoint: function(alias, endpoint) {
-            this.endpoints[alias] = endpoint;
+        setUserOption: function(option) {
+            this.userOptions[option.key] = option;
+            return this;
+        },
+
+        /**
+         * @param {String} key
+         * @returns {String}
+         */
+        getUserOptionValue: function(key) {
+            if (!this.userOptions[key]) {
+                return '';
+            }
+            
+            var value =  this.userOptions[key].value;
+            return value ? value : '';
+        },
+
+        /**
+         * @param {String} value
+         * @returns {String}
+         */
+        replaceUserOptions: function(value) {
+            console.log(value);
+            for (var key in this.userOptions) {
+                var regex = new RegExp('{{' + key + '}}', 'g');
+                value = value.replace(regex, this.getUserOptionValue(key));
+            }
+            return value;
+        },
+
+        /**
+         * @returns {boolean}
+         */
+        hasUserOptions: function() {
+            return Object.keys(this.userOptions).length > 0;
+        },
+
+        /**
+         * @param {String} alias
+         * @param {String} host
+         */
+        setHost: function(alias, host) {
+            this.hosts[alias] = host;
             return this;
         },
 
@@ -47,43 +89,55 @@ var browsapi = {
             return this;
         }
     },
+
+    /**
+     * @param {String} key
+     * @param {String} description
+     * @constructor
+     */
+    UserOption: function(key, description) {
+        var opt         = this;
+        opt.key         = key;
+        opt.description = description;
+        opt.value       = null;
+    },
     
 
     /**
-     * @param {String} host
+     * @param {String} url
      * @param {String} auth      Either 'none' or 'basic'
      * @param {Object} headers   Key/value map
      * @param {String} username  Username to use with basic auth
      * @param {String} password  Password to use with basic auth
      * @constructor
      */
-    Endpoint: function(host, auth, headers, username, password) {
-        var endpoint      = this;
-        endpoint.host     = host;
-        endpoint.auth     = auth;
-        endpoint.headers  = headers;
-        endpoint.username = username;
-        endpoint.password = password;
+    Host: function(url, auth, headers, username, password) {
+        var host      = this;
+        host.url      = url;
+        host.auth     = auth;
+        host.headers  = headers;
+        host.username = username;
+        host.password = password;
     },
     
     
     /**
      * @param {String} method
-     * @param {browsapi.Endpoint} endpoint
+     * @param {browsapi.Host} host
      * @param {String} path
      * @constructor
      */
-    Request: function(method, endpoint, path) {
-        var rqst = this;
-        rqst.method   = method;
-        rqst.path     = path;
-        rqst.endpoint = endpoint;
+    Request: function(method, host, path) {
+        var rqst    = this;
+        rqst.method = method;
+        rqst.path   = path;
+        rqst.host   = host;
 
         /**
          * @returns {String}
          */
         rqst.getFullURL = function() {
-            return rqst.endpoint.host + rqst.path;
+            return rqst.host.url + rqst.path;
         };
 
         /**
@@ -91,12 +145,12 @@ var browsapi = {
          */
         rqst.getParams = function() {
             return {
-                url      : rqst.endpoint.host + rqst.path,
+                url      : rqst.host.url + rqst.path,
                 method   : rqst.method,
-                auth     : rqst.endpoint.auth,
-                headers  : rqst.endpoint.headers,
-                username : rqst.endpoint.username,
-                password : rqst.endpoint.password
+                auth     : rqst.host.auth,
+                headers  : rqst.host.headers,
+                username : rqst.host.username,
+                password : rqst.host.password
             };
         };
     },
@@ -199,6 +253,54 @@ var browsapi = {
             });
         };
     },
+
+
+    /**
+     * @param {Object} options  Keys: string, Values: browsapi.Config.UserOption objects
+     * @param {Function} onSave
+     * @constructor
+     */
+    OptionsDialogView: function(options, onSave) {
+        var view = this;
+
+        var $dlg  = $('#conf_options_dlg');
+        var $opts = $dlg.find('.options');
+        var $save = $dlg.find('button');
+        
+        for (var key in options) {
+            var option = options[key];
+            var $opt = $('<p><input data-key="' + option.key + '" type="text" placeholder="' + option.description + ' ..."></p>');
+            $opts.append($opt);
+        };
+
+        var dlg = new browsapi.DialogView($dlg);
+        
+        var wrappedOnSave = function() {
+            if ($.isFunction(onSave)) {
+                for (var key in options) {
+                    options[key].value = $opts.find('input[data-key="' + key + '"]').val();
+                };
+                onSave(options);
+            }
+            view.hide();
+        };
+        
+        $save.on('click', wrappedOnSave);
+        $dlg.find('input').on('keyup', function(e) {
+            if (e.keyCode == 13) {
+                wrappedOnSave();
+                e.stopPropagation();
+            }
+        });
+        
+        view.show = function() {
+            dlg.show();
+        };
+
+        view.hide = function() {
+            dlg.hide();
+        };
+    },
     
     
     HeaderDialogView: function() {
@@ -265,18 +367,22 @@ var browsapi = {
         var $confBasicAuthUser  = $sectionConfig.find('#auth_basic_user');
         var $confBasicAuthPass  = $sectionConfig.find('#auth_basic_pass');
 
+        var optionsView = new browsapi.OptionsConfiguratorView();
         var headersView = new browsapi.HeadersConfiguratorView();
         var hostView    = new browsapi.HostConfiguratorView(view);
         var pathView    = new browsapi.PathConfiguratorView();
 
-        view.showEndpoint = function(endpoint) {
-            headersView.setHeaders(endpoint.headers);
-            hostView.setValue(endpoint.host);
+        /**
+         * @param {browsapi.Config.Host} host
+         */
+        view.showHost = function(host) {
+            headersView.setHeaders(host.headers);
+            hostView.setValue(host.url);
             
-            $confAuth.val(endpoint.auth).trigger('change');
-            if (endpoint.auth == 'basic') {
-                $confBasicAuthUser.val(endpoint.username);
-                $confBasicAuthPass.val(endpoint.password);
+            $confAuth.val(host.auth).trigger('change');
+            if (host.auth == 'basic') {
+                $confBasicAuthUser.val(browsapi.Config.replaceUserOptions(host.username));
+                $confBasicAuthPass.val(browsapi.Config.replaceUserOptions(host.password));
             }
         };
 
@@ -308,7 +414,7 @@ var browsapi = {
             
             var request = new browsapi.Request(
                 $confMethod.val(),
-                new browsapi.Endpoint(
+                new browsapi.Host(
                     host,
                     $confAuth.val(),
                     headersView.getHeaders(),
@@ -342,6 +448,29 @@ var browsapi = {
         });
     },
 
+
+    /**
+     * The user options configurator.
+     * 
+     * @constructor
+     */
+    OptionsConfiguratorView: function() {
+        var $confOptions = $('#conf_options');
+        
+        if (browsapi.Config.hasUserOptions()) {
+            var optionsDlg = new browsapi.OptionsDialogView(
+                browsapi.Config.userOptions,
+                function(options) {
+                    browsapi.Config.userOptions = options;
+                }
+            );
+            $confOptions.on('click', function() {
+                optionsDlg.show();
+            });
+            $confOptions.show();
+        }
+    },
+    
 
     /**
      * The headers configurator.
@@ -395,31 +524,28 @@ var browsapi = {
         
         var addOrUpdateHeader = function(oldKey, key, value) {
             var headers = view.getHeaders();
-            
             if (key.length == 0 || oldKey != key) {
                 delete headers[oldKey];
             }
-            
             if (key.length > 0) {
                 headers[key] = value;
             }
-            
             view.setHeaders(headers);
         };
 
-        var dlg = new browsapi.HeaderDialogView();
+        var headerDlg = new browsapi.HeaderDialogView();
         
         $confHeaderValues.on('click', 'a', function(e) {
             e.preventDefault();
             var $a = $(this);
-            dlg.show($a.data('key'), $a.data('value'), addOrUpdateHeader);
-            dlg.focusValue();
+            headerDlg.show($a.data('key'), $a.data('value'), addOrUpdateHeader);
+            headerDlg.focusValue();
         });
         
         $confAddHeader.on('click', function(e) {
             e.preventDefault();
-            dlg.show('', '', addOrUpdateHeader);
-            dlg.focusKey();
+            headerDlg.show('', '', addOrUpdateHeader);
+            headerDlg.focusKey();
         });
     },
 
@@ -433,14 +559,14 @@ var browsapi = {
     HostConfiguratorView: function(configuratorView) {
         var view = this;
 
-        var $host = $('#conf_host');
-        var $endpoints = $('#conf_endpoints');
+        var $host  = $('#conf_host');
+        var $hosts = $('#conf_hosts');
 
         /**
          * @param {String} host
          */
         view.setValue = function(host) {
-            $host.val(host);
+            $host.val(browsapi.Config.replaceUserOptions(host));
         };
 
         /**
@@ -450,26 +576,31 @@ var browsapi = {
             return $host.val();
         };
 
-        var endpoints = browsapi.Config.endpoints;
-        if (Object.keys(endpoints).length > 0) {
+        var hosts = browsapi.Config.hosts;
+        
+        if (Object.keys(hosts).length > 0) {
             $host.addClass('has-selector');
-            $endpoints.append('<ul></ul>');
+            $hosts.append('<ul></ul>');
         } else {
             $host.find('+ .selector').hide();
         }
 
-        var createShowEndpointHandler = function(endpoint) {
+        /**
+         * @param {browsapi.Config.Host} host
+         * @returns {Function}
+         */
+        var createShowHostHandler = function(host) {
             return function() {
-                configuratorView.showEndpoint(endpoint);
+                configuratorView.showHost(host);
                 $(this).parents('.selection').prev('.selector').trigger('click'); // Hide selector
             };
         };
 
-        for (var alias in endpoints) {
+        for (var alias in hosts) {
             var $li = $('<li></li>');
             $li.text(alias);
-            $li.on('click', createShowEndpointHandler(endpoints[alias]));
-            $endpoints.find('ul').append($li);
+            $li.on('click', createShowHostHandler(hosts[alias]));
+            $hosts.find('ul').append($li);
         }
     },
 
@@ -489,7 +620,7 @@ var browsapi = {
          * @param {String} path
          */
         view.setValue = function(path) {
-            $confPath.val(path);
+            $confPath.val(browsapi.Config.replaceUserOptions(path));
         };
         
         /**
@@ -829,12 +960,12 @@ var browsapi = {
                     rsp: entry.rsp,
                     rqst: new browsapi.Request(
                         entry.rqst.method,
-                        new browsapi.Endpoint(
-                            entry.rqst.endpoint.host,
-                            entry.rqst.endpoint.auth,
-                            entry.rqst.endpoint.headers,
-                            entry.rqst.endpoint.username,
-                            entry.rqst.endpoint.password
+                        new browsapi.Host(
+                            entry.rqst.host.host,
+                            entry.rqst.host.auth,
+                            entry.rqst.host.headers,
+                            entry.rqst.host.username,
+                            entry.rqst.host.password
                         ),
                         entry.rqst.path
                     )
